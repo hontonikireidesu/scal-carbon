@@ -745,7 +745,7 @@ canvas{display:block;max-width:100%}
             <div class="card-header"><div><div class="card-title">Upload document</div><div class="card-sub">PDF, JPG, PNG — SP bills, diesel receipts, material invoices, service records</div></div></div>
             <div class="card-body">
               <div class="upload-zone" id="uploadZone">
-                <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png"/>
+                <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none"/>
                 <div class="upload-icon-wrap"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg></div>
                 <div class="upload-title" id="uploadTitle">Drop file here or click to browse</div>
                 <div class="upload-sub">Supports SP electricity bills, diesel receipts, concrete/steel invoices, refrigerant service records, waste disposal certificates</div>
@@ -1042,7 +1042,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const uploadZone = document.getElementById('uploadZone');
 
   // Click on zone triggers file picker
-  uploadZone.addEventListener('click', () => fileInput.click());
+  uploadZone.addEventListener('click', (e) => {
+  if (e.target === fileInput) return;
+  e.preventDefault();
+  e.stopPropagation();
+  fileInput.click();
+});
+```
 
   // Drag and drop
   uploadZone.addEventListener('dragover', (e) => {
