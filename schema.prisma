@@ -1,0 +1,105 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Company {
+  id           String   @id @default(cuid())
+  uen          String   @unique
+  name         String
+  type         String   @default("MAIN_CONTRACTOR")
+  contactName  String?
+  contactEmail String?
+  contactPhone String?
+  createdAt    DateTime @default(now())
+  isActive     Boolean  @default(true)
+
+  users            User[]
+  reportingPeriods ReportingPeriod[]
+  documents        UploadedDocument[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  companyId    String
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("EDITOR")
+  createdAt    DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+}
+
+model ReportingPeriod {
+  id          String   @id @default(cuid())
+  companyId   String
+  year        Int
+  periodStart DateTime
+  periodEnd   DateTime
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  company         Company         @relation(fields: [companyId], references: [id])
+  emissionEntries EmissionEntry[]
+
+  @@unique([companyId, year])
+}
+
+model EmissionEntry {
+  id               String   @id @default(cuid())
+  periodId         String
+  scope            Int
+  category         String
+  subCategory      String?
+  activityValue    Float
+  activityUnit     String
+  emissionFactorId String
+  calculatedCO2e   Float
+  dataSource       String   @default("MANUAL")
+  notes            String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  period         ReportingPeriod @relation(fields: [periodId], references: [id])
+  emissionFactor EmissionFactor  @relation(fields: [emissionFactorId], references: [id])
+}
+
+model EmissionFactor {
+  id            String  @id @default(cuid())
+  name          String
+  category      String
+  substance     String
+  unit          String
+  kgCO2ePerUnit Float
+  scope         Int
+  source        String
+  year          Int
+  country       String  @default("SG")
+  isActive      Boolean @default(true)
+
+  entries EmissionEntry[]
+
+  @@unique([substance, year])
+}
+
+model UploadedDocument {
+  id              String   @id @default(cuid())
+  companyId       String
+  filename        String
+  documentType    String?
+  aiStatus        String   @default("PENDING")
+  aiConfidence    Float?
+  aiExtractedData Json?
+  isApproved      Boolean?
+  createdAt       DateTime @default(now())
+
+  company Company @relation(fields: [companyId], references: [id])
+}
