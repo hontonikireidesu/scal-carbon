@@ -8,8 +8,3 @@
     "restartPolicyType": "ON_FAILURE"
   }
 }
-```
-
-Also add a `.npmrc` file — create it in Notepad, save as `.npmrc` (All Files, no extension), with just this one line inside:
-```
-prefer-offline=false
