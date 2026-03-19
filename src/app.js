@@ -20,12 +20,15 @@ app.use('/api/factors',   require('./routes/emissionFactors'));
 app.use('/api/documents', require('./routes/documents'));
 
 // Health check
-app.get('/health', (req, res) => res.json({ 
-  status: 'ok', 
-  version: '1.0.0',
-  hasAnthropicKey: !!process.env.ANTHROPIC_API_KEY,
-  keyPrefix: process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.substring(0, 10) : 'NOT SET'
-}));
+app.get('/health', (req, res) => {
+  const key = process.env.ANTHROPIC_API_KEY;
+  res.json({ 
+    status: 'ok',
+    hasKey: !!key,
+    keyStart: key ? key.slice(0,15) : 'NOT SET',
+    allEnvKeys: Object.keys(process.env).filter(k => k.includes('ANTHROP'))
+  });
+});
 
 // Catch-all: serve index.html
 app.get('*', (req, res) => {
