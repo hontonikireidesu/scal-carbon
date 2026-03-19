@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SCAL Carbon Calculator — ESG Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+/* ===== RESET & BASE ===== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F6F3;
+  --surface:#FFFFFF;
+  --surface2:#F0F1EE;
+  --border:#E2E4DF;
+  --border2:#C8CBC2;
+  --text:#1A1C18;
+  --text2:#5A5D55;
+  --text3:#8A8D83;
+  --green:#1A8A5E;
+  --green-light:#E6F4EE;
+  --green-mid:#52A882;
+  --green-dark:#0F5C3E;
+  --amber:#B87A10;
+  --amber-light:#FDF3DC;
+  --red:#C0392B;
+  --red-light:#FDECEA;
+  --blue:#1E6FA8;
+  --blue-light:#E6F1FB;
+  --purple:#6B4FA8;
+  --purple-light:#F0ECFA;
+  --shadow:0 1px 3px rgba(0,0,0,0.08),0 4px 12px rgba(0,0,0,0.04);
+  --shadow-lg:0 4px 16px rgba(0,0,0,0.1),0 8px 32px rgba(0,0,0,0.06);
+  --radius:10px;
+  --radius-lg:14px;
+}
+html{font-size:14px;background:var(--bg);color:var(--text)}
+body{font-family:'DM Sans',system-ui,sans-serif;min-height:100vh;display:flex}
+
+/* ===== SIDEBAR ===== */
+.sidebar{width:230px;min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid var(--border)}
+.logo-mark{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.logo-icon{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:18px;height:18px;fill:white}
+.logo-name{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.3px}
+.logo-sub{font-size:11px;color:var(--text3);padding-left:42px}
+.sidebar-section{padding:12px 10px 4px;font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.08em;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;margin:1px 8px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;font-weight:400;transition:.15s;border:none;background:none;width:calc(100% - 16px);text-align:left}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--green-light);color:var(--green-dark);font-weight:500}
+.nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.7}
+.nav-item.active svg{opacity:1}
+.nav-badge{margin-left:auto;background:var(--red);color:white;font-size:10px;padding:1px 6px;border-radius:10px;font-weight:600}
+.sidebar-divider{height:1px;background:var(--border);margin:8px 16px}
+.sidebar-user{padding:14px 12px;margin-top:auto;border-top:1px solid var(--border)}
+.user-company{font-size:12px;font-weight:500;color:var(--text)}
+.user-role{font-size:11px;color:var(--text3);margin-top:2px}
+.user-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:5px}
+
+/* ===== MAIN AREA ===== */
+.main{flex:1;overflow-x:hidden}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.topbar-title{font-size:16px;font-weight:600;color:var(--text)}
+.topbar-sub{font-size:12px;color:var(--text3);margin-top:1px}
+.topbar-actions{display:flex;align-items:center;gap:10px}
+.fy-badge{padding:5px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:20px;font-size:12px;color:var(--text2);font-weight:500;cursor:pointer}
+.btn{padding:7px 14px;border-radius:8px;font-size:12px;font-weight:500;cursor:pointer;transition:.15s;border:1px solid transparent;font-family:inherit}
+.btn-primary{background:var(--green);color:white;border-color:var(--green-dark)}
+.btn-primary:hover{background:var(--green-dark)}
+.btn-outline{background:white;color:var(--text);border-color:var(--border2)}
+.btn-outline:hover{background:var(--surface2)}
+.content{padding:24px 28px}
+
+/* ===== PROGRESS WIZARD ===== */
+.wizard{display:flex;align-items:center;gap:0;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 20px;overflow-x:auto}
+.wstep{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.wstep-num{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;border:2px solid var(--border2);color:var(--text3);transition:.2s}
+.wstep.done .wstep-num{background:var(--green);border-color:var(--green);color:white}
+.wstep.active .wstep-num{background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
+.wstep-label{font-size:12px;color:var(--text3);font-weight:400}
+.wstep.active .wstep-label{color:var(--text);font-weight:500}
+.wstep.done .wstep-label{color:var(--green-dark)}
+.wconnect{flex:1;height:1px;background:var(--border);min-width:20px;margin:0 6px}
+.wconnect.done{background:var(--green)}
+
+/* ===== METRIC CARDS ===== */
+.metrics-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:20px}
+.metric-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;box-shadow:var(--shadow)}
+.metric-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.metric-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center}
+.metric-icon svg{width:18px;height:18px}
+.metric-icon.s1{background:var(--red-light)} .metric-icon.s1 svg{fill:var(--red)}
+.metric-icon.s2{background:var(--amber-light)} .metric-icon.s2 svg{fill:var(--amber)}
+.metric-icon.s3{background:var(--blue-light)} .metric-icon.s3 svg{fill:var(--blue)}
+.metric-icon.total{background:var(--green-light)} .metric-icon.total svg{fill:var(--green)}
+.metric-val{font-size:26px;font-weight:600;color:var(--text);letter-spacing:-0.5px;line-height:1}
+.metric-unit{font-size:12px;color:var(--text3);font-weight:400;margin-left:2px}
+.metric-label{font-size:12px;color:var(--text2);margin-top:4px}
+.metric-delta{font-size:11px;margin-top:6px;padding:2px 8px;border-radius:20px;display:inline-block;font-weight:500}
+.delta-up{background:var(--red-light);color:var(--red)}
+.delta-down{background:var(--green-light);color:var(--green-dark)}
+.delta-neutral{background:var(--surface2);color:var(--text3)}
+
+/* ===== CARDS ===== */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow)}
+.card-header{padding:16px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:14px;font-weight:600;color:var(--text)}
+.card-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.card-body{padding:16px 18px}
+.card-divider{height:1px;background:var(--border);margin:0 18px}
+
+/* ===== GRID LAYOUTS ===== */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.grid-65-35{display:grid;grid-template-columns:1.8fr 1fr;gap:16px}
+
+/* ===== SCOPE BADGES ===== */
+.scope-pill{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.sp-1{background:var(--red-light);color:var(--red)}
+.sp-2{background:var(--amber-light);color:var(--amber)}
+.sp-3{background:var(--blue-light);color:var(--blue)}
+
+/* ===== TABS ===== */
+.tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px;overflow-x:auto}
+.tab-btn{padding:10px 16px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--text3);font-family:inherit;font-weight:400;border-bottom:2px solid transparent;transition:.15s;white-space:nowrap}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--green-dark);font-weight:600;border-bottom-color:var(--green)}
+
+/* ===== INPUT GROUPS ===== */
+.input-section{margin-bottom:20px}
+.input-section-title{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.input-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.input-group{display:flex;flex-direction:column;gap:4px}
+.input-group label{font-size:12px;color:var(--text2);font-weight:500}
+.input-group-row{display:flex;gap:6px;align-items:center}
+.input-field{padding:8px 10px;border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);background:var(--surface);font-family:inherit;transition:.15s;width:100%}
+.input-field:focus{outline:none;border-color:var(--green-mid);box-shadow:0 0 0 3px rgba(26,138,94,.1)}
+.input-unit{font-size:12px;color:var(--text3);white-space:nowrap;min-width:40px}
+.input-result-tag{font-size:11px;padding:3px 8px;background:var(--green-light);color:var(--green-dark);border-radius:20px;font-weight:600;white-space:nowrap}
+select.input-field{cursor:pointer}
+
+/* ===== CHART BARS ===== */
+.bar-chart-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bcr-label{font-size:12px;color:var(--text2);width:130px;flex-shrink:0}
+.bcr-track{flex:1;height:7px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.bcr-fill{height:100%;border-radius:4px;transition:.4s}
+.bcr-val{font-size:12px;font-weight:600;color:var(--text);min-width:70px;text-align:right}
+
+/* ===== DONUT CHART ===== */
+.donut-wrap{display:flex;align-items:center;gap:20px}
+.donut-legend{flex:1;display:flex;flex-direction:column;gap:10px}
+.legend-item{display:flex;align-items:center;gap:8px}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-info{flex:1}
+.legend-name{font-size:12px;color:var(--text2)}
+.legend-val{font-size:13px;font-weight:600;color:var(--text)}
+.legend-pct{font-size:11px;color:var(--text3);margin-left:4px}
+
+/* ===== UPLOAD ZONE ===== */
+.upload-zone{border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:28px;text-align:center;cursor:pointer;transition:.2s;position:relative}
+.upload-zone:hover{border-color:var(--green);background:var(--green-light)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon-wrap{width:44px;height:44px;background:var(--green-light);border-radius:12px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}
+.upload-icon-wrap svg{width:22px;height:22px;fill:var(--green)}
+.upload-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px}
+.upload-sub{font-size:12px;color:var(--text3)}
+.ai-chip{display:inline-flex;align-items:center;gap:5px;background:var(--purple-light);color:var(--purple);font-size:11px;padding:4px 12px;border-radius:20px;margin-top:10px;font-weight:600}
+
+/* ===== EXTRACTED RESULT ===== */
+.extracted-box{background:var(--green-light);border:1px solid #A8D5BF;border-radius:var(--radius);padding:14px 16px;margin-top:14px}
+.ext-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ext-filename{font-size:12px;font-weight:600;color:var(--green-dark)}
+.ext-conf{font-size:11px;background:var(--green);color:white;padding:2px 8px;border-radius:20px;font-weight:600}
+.ext-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(26,138,94,.15);font-size:12px}
+.ext-row:last-child{border-bottom:none}
+.ext-key{color:var(--text2)}
+.ext-val{font-weight:600;color:var(--text)}
+
+/* ===== TABLES ===== */
+.data-table{width:100%;border-collapse:collapse;font-size:12px}
+.data-table th{padding:8px 10px;text-align:left;font-weight:600;color:var(--text3);border-bottom:1px solid var(--border);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.data-table td{padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text)}
+.data-table tr:last-child td{border-bottom:none}
+.data-table tr:hover td{background:var(--surface2)}
+
+/* ===== TARGETS & REDUCTION ===== */
+.target-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.target-header{display:flex;justify-content:space-between;align-items:center}
+.target-label{font-size:12px;font-weight:600;color:var(--text2)}
+.target-progress-track{height:8px;background:var(--surface2);border-radius:4px;overflow:hidden}
+.target-progress-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--green),var(--green-mid));transition:.5s}
+.target-nums{display:flex;justify-content:space-between;font-size:11px;color:var(--text3)}
+
+/* ===== STATUS PILLS ===== */
+.status-pill{padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+.sp-submitted{background:#E6F4EE;color:#0F5C3E}
+.sp-draft{background:var(--amber-light);color:var(--amber)}
+.sp-pending{background:var(--surface2);color:var(--text3)}
+.sp-verified{background:var(--blue-light);color:var(--blue)}
+
+/* ===== ALERT BOXES ===== */
+.alert{display:flex;gap:10px;padding:12px 14px;border-radius:var(--radius);font-size:12px;margin-bottom:16px}
+.alert-info{background:var(--blue-light);border:1px solid #B5D4F4;color:var(--blue)}
+.alert-success{background:var(--green-light);border:1px solid #A8D5BF;color:var(--green-dark)}
+.alert-warning{background:var(--amber-light);border:1px solid #FAC775;color:var(--amber)}
+.alert svg{width:16px;height:16px;flex-shrink:0;margin-top:1px}
+
+/* ===== REDUCTION INITIATIVES ===== */
+.initiative-card{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.initiative-card:last-child{border-bottom:none}
+.init-icon{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.init-icon svg{width:18px;height:18px}
+.init-label{font-size:13px;font-weight:500;color:var(--text)}
+.init-desc{font-size:11px;color:var(--text3);margin-top:2px}
+.init-impact{font-size:12px;font-weight:600;margin-top:4px}
+
+/* ===== PAGE SECTIONS ===== */
+.page{display:none}
+.page.active{display:block}
+.page-header{margin-bottom:20px}
+.page-title{font-size:20px;font-weight:600;color:var(--text);letter-spacing:-0.3px}
+.page-desc{font-size:13px;color:var(--text3);margin-top:4px}
+
+/* ===== SUPPLIER MODULE ===== */
+.supplier-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.supplier-avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:white;flex-shrink:0}
+.supplier-name{font-size:13px;font-weight:500;color:var(--text)}
+.supplier-type{font-size:11px;color:var(--text3)}
+.supplier-status{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* ===== REPORT EXPORT ===== */
+.report-option{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:.15s;margin-bottom:10px}
+.report-option:hover{border-color:var(--green);background:var(--green-light)}
+.report-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.report-icon svg{width:20px;height:20px}
+.report-label{font-size:13px;font-weight:600;color:var(--text)}
+.report-desc{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ===== NOTIFICATION BELL ===== */
+.notif-btn{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;position:relative}
+.notif-btn svg{width:16px;height:16px;fill:var(--text3)}
+.notif-dot{width:7px;height:7px;border-radius:50%;background:var(--red);position:absolute;top:5px;right:5px;border:2px solid white}
+
+/* ===== HOTSPOT MAP PLACEHOLDER ===== */
+.hotspot-map{background:var(--surface2);border-radius:var(--radius);height:180px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;border:1px dashed var(--border2)}
+.hotspot-map-text{font-size:12px;color:var(--text3)}
+
+/* ===== SECTION DIVIDER LABEL ===== */
+.section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px}
+
+/* ===== EMBED CHART CANVAS ===== */
+canvas{display:block;max-width:100%}
+
+/* ===== SCROLLBAR ===== */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:900px){
+  .sidebar{width:200px}
+  .metrics-row{grid-template-columns:1fr 1fr}
+  .grid-2,.grid-3,.grid-65-35{grid-template-columns:1fr}
+  .input-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .sidebar{display:none}
+  .metrics-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== SIDEBAR ===== -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 008 20C19 20 22 3 22 3c-1 2-8 5.25-13 5H8a5 5 0 00-5 5A9 9 0 008 22.93V22a7 7 0 01-3-5.87A9.66 9.66 0 018 13c2 0 4.45.45 7-1.5A10 10 0 0017 8z"/></svg>
+      </div>
+      <span class="logo-name">SCAL Carbon</span>
+    </div>
+    <div class="logo-sub">ESG Platform v1.0</div>
+  </div>
+
+  <div class="sidebar-section">Overview</div>
+  <button class="nav-item active" onclick="navigate('dashboard',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+    Dashboard
+  </button>
+  <button class="nav-item" onclick="navigate('targets',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+    Targets & Goals
+  </button>
+
+  <div class="sidebar-section">GHG Calculation</div>
+  <button class="nav-item" onclick="navigate('scope1',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 23h2.1l1.8-8 2.1 2v6h2v-7.5l-2.1-2 .6-3C14.8 12 16.8 13 19 13v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1L6 8.3V13h2V9.6l1.8-.7z"/></svg>
+    Scope 1 — Direct
+    <span class="scope-pill sp-1" style="margin-left:auto;font-size:9px">S1</span>
+  </button>
+  <button class="nav-item" onclick="navigate('scope2',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15 9H9v6h6V9zm-2 4h-2v-2h2v2zm8-2V9h-2V7c0-1.1-.9-2-2-2h-2V3h-2v2h-2V3H9v2H7c-1.1 0-2 .9-2 2v2H3v2h2v2H3v2h2v2c0 1.1.9 2 2 2h2v2h2v-2h2v2h2v-2h2c1.1 0 2-.9 2-2v-2h2v-2h-2v-2h2zm-4 6H7V7h10v10z"/></svg>
+    Scope 2 — Electricity
+    <span class="scope-pill sp-2" style="margin-left:auto;font-size:9px">S2</span>
+  </button>
+  <button class="nav-item" onclick="navigate('scope3',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/></svg>
+    Scope 3 — Value Chain
+    <span class="scope-pill sp-3" style="margin-left:auto;font-size:9px">S3</span>
+  </button>
+  <button class="nav-item" onclick="navigate('embodied',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+    Embodied Carbon (BCA)
+  </button>
+
+  <div class="sidebar-section">Tools</div>
+  <button class="nav-item" onclick="navigate('upload',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+    AI Bill Upload
+    <span class="nav-badge">3</span>
+  </button>
+  <button class="nav-item" onclick="navigate('suppliers',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+    Sub-contractor Hub
+  </button>
+  <button class="nav-item" onclick="navigate('reports',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+    Reports & Export
+  </button>
+
+  <div class="sidebar-section">Admin</div>
+  <button class="nav-item" onclick="navigate('members',this)">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+    SCAL Members
+  </button>
+
+  <div class="sidebar-divider"></div>
+  <div class="sidebar-user">
+    <div class="user-company"><span class="user-dot"></span>ABC Construction Pte Ltd</div>
+    <div class="user-role">Main Contractor · UEN 198312345A</div>
+  </div>
+</nav>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Dashboard</div>
+      <div class="topbar-sub">GHG Protocol Corporate Standard · ISO 14064-1 · SG NEA EF 2024</div>
+    </div>
+    <div class="topbar-actions">
+      <select class="fy-badge" style="border:none;cursor:pointer;background:var(--surface2)">
+        <option>FY 2024 (Jan–Dec)</option>
+        <option>FY 2023 (Jan–Dec)</option>
+        <option>FY 2022 (Jan–Dec)</option>
+      </select>
+      <button class="notif-btn"><svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg><div class="notif-dot"></div></button>
+      <button class="btn btn-primary">+ Add Data</button>
+    </div>
+  </div>
+
+  <!-- ========================= DASHBOARD ========================= -->
+  <div class="page active" id="page-dashboard">
+    <div class="content">
+
+      <!-- Wizard -->
+      <div class="wizard">
+        <div class="wstep done"><div class="wstep-num">✓</div><div class="wstep-label">Company Setup</div></div>
+        <div class="wconnect done"></div>
+        <div class="wstep done"><div class="wstep-num">✓</div><div class="wstep-label">Scope 1 Data</div></div>
+        <div class="wconnect done"></div>
+        <div class="wstep active"><div class="wstep-num">3</div><div class="wstep-label">Scope 2 Data</div></div>
+        <div class="wconnect"></div>
+        <div class="wstep"><div class="wstep-num">4</div><div class="wstep-label">Scope 3 Data</div></div>
+        <div class="wconnect"></div>
+        <div class="wstep"><div class="wstep-num">5</div><div class="wstep-label">Review & Submit</div></div>
+        <div class="wconnect"></div>
+        <div class="wstep"><div class="wstep-num">6</div><div class="wstep-label">Generate Report</div></div>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert alert-info">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <div><strong>Scope 2 data incomplete</strong> — 3 months of electricity bills pending. Upload via AI Bill Upload or enter manually to complete FY 2024 reporting.</div>
+      </div>
+
+      <!-- Metric Cards -->
+      <div class="metrics-row">
+        <div class="metric-card">
+          <div class="metric-top">
+            <div><div class="metric-val">1,842<span class="metric-unit">tCO₂e</span></div><div class="metric-label">Total GHG Emissions</div></div>
+            <div class="metric-icon total"><svg viewBox="0 0 24 24"><path d="M17 8C8 10 5.9 16.17 3.82 21.34L5.71 22l1-2.3A4.49 4.49 0 008 20C19 20 22 3 22 3c-1 2-8 5.25-13 5H8a5 5 0 00-5 5A9 9 0 008 22.93V22a7 7 0 01-3-5.87A9.66 9.66 0 018 13c2 0 4.45.45 7-1.5A10 10 0 0017 8z"/></svg></div>
+          </div>
+          <div class="metric-delta delta-up">▲ +4.2% vs FY2023</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-top">
+            <div><div class="metric-val">486<span class="metric-unit">tCO₂e</span></div><div class="metric-label">Scope 1 — Direct</div></div>
+            <div class="metric-icon s1"><svg viewBox="0 0 24 24"><path d="M12.36 6l.4 2H18v6h-2.36l-.4-2H7v-6h5.36M14 4H5v17h2v-7h6.6l.4 2H19V6h-4.6L14 4z"/></svg></div>
+          </div>
+          <div class="metric-delta delta-down">▼ −2.1% vs FY2023</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-top">
+            <div><div class="metric-val">312<span class="metric-unit">tCO₂e</span></div><div class="metric-label">Scope 2 — Electricity</div></div>
+            <div class="metric-icon s2"><svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg></div>
+          </div>
+          <div class="metric-delta delta-neutral">— Partial data (9/12 mo)</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-top">
+            <div><div class="metric-val">1,044<span class="metric-unit">tCO₂e</span></div><div class="metric-label">Scope 3 — Value Chain</div></div>
+            <div class="metric-icon s3"><svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg></div>
+          </div>
+          <div class="metric-delta delta-up">▲ +9.8% vs FY2023</div>
+        </div>
+      </div>
+
+      <!-- Charts Row -->
+      <div class="grid-65-35" style="margin-bottom:16px">
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Monthly emissions trend</div><div class="card-sub">tCO₂e by month — FY 2024</div></div></div>
+          <div class="card-body"><canvas id="trendChart" height="140"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">Scope breakdown</div><div class="card-sub">% of total 1,842 tCO₂e</div></div></div>
+          <div class="card-body">
+            <div class="donut-wrap">
+              <canvas id="donutChart" width="110" height="110"></canvas>
+              <div class="donut-legend">
+                <div class="legend-item"><div class="legend-dot" style="background:#C0392B"></div><div class="legend-info"><div class="legend-name">Scope 3</div><div class="legend-val">1,044<span class="legend-pct">56.7%</span></div></div></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#B87A10"></div><div class="legend-info"><div class="legend-name">Scope 1</div><div class="legend-val">486<span class="legend-pct">26.4%</span></div></div></div>
+                <div class="legend-item"><div class="legend-dot" style="background:#1E6FA8"></div><div class="legend-info"><div class="legend-name">Scope 2</div><div class="legend-val">312<span class="legend-pct">16.9%</span></div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Row -->
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Top emission sources</div></div>
+          <div class="card-body">
+            <div class="bar-chart-row"><div class="bcr-label">Concrete & steel</div><div class="bcr-track"><div class="bcr-fill" style="width:82%;background:var(--red)"></div></div><div class="bcr-val">684 tCO₂e</div></div>
+            <div class="bar-chart-row"><div class="bcr-label">Diesel — machinery</div><div class="bcr-track"><div class="bcr-fill" style="width:52%;background:var(--amber)"></div></div><div class="bcr-val">432 tCO₂e</div></div>
+            <div class="bar-chart-row"><div class="bcr-label">Site electricity</div><div class="bcr-track"><div class="bcr-fill" style="width:37%;background:var(--blue)"></div></div><div class="bcr-val">312 tCO₂e</div></div>
+            <div class="bar-chart-row"><div class="bcr-label">Logistics & transport</div><div class="bcr-track"><div class="bcr-fill" style="width:27%;background:var(--red)"></div></div><div class="bcr-val">228 tCO₂e</div></div>
+            <div class="bar-chart-row"><div class="bcr-label">Worker commute</div><div class="bcr-track"><div class="bcr-fill" style="width:16%;background:var(--amber)"></div></div><div class="bcr-val">132 tCO₂e</div></div>
+            <div class="bar-chart-row"><div class="bcr-label">Business travel</div><div class="bcr-track"><div class="bcr-fill" style="width:6%;background:var(--text3)"></div></div><div class="bcr-val">54 tCO₂e</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Intensity benchmarks</div></div>
+          <div class="card-body">
+            <div style="margin-bottom:16px">
+              <div class="section-label">Emissions intensity</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div style="background:var(--surface2);border-radius:8px;padding:10px">
+                  <div style="font-size:10px;color:var(--text3)">Per $M revenue</div>
+                  <div style="font-size:20px;font-weight:700;color:var(--text)">184<span style="font-size:11px;font-weight:400;color:var(--text3)"> tCO₂e</span></div>
+                  <div style="font-size:10px;color:var(--text3)">SCAL avg: 210</div>
+                </div>
+                <div style="background:var(--surface2);border-radius:8px;padding:10px">
+                  <div style="font-size:10px;color:var(--text3)">Per FTE</div>
+                  <div style="font-size:20px;font-weight:700;color:var(--text)">21.7<span style="font-size:11px;font-weight:400;color:var(--text3)"> tCO₂e</span></div>
+                  <div style="font-size:10px;color:var(--text3)">SCAL avg: 26.4</div>
+                </div>
+              </div>
+            </div>
+            <div class="section-label">Data completeness</div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+              <div style="flex:1;height:8px;background:var(--surface2);border-radius:4px;overflow:hidden"><div style="width:78%;height:100%;background:var(--green);border-radius:4px"></div></div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">78%</div>
+            </div>
+            <div style="font-size:11px;color:var(--text3)">Scope 1 ✓ Complete &nbsp;·&nbsp; Scope 2 ⚠ 9/12 mo &nbsp;·&nbsp; Scope 3 ⚠ Partial</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= SCOPE 1 ========================= -->
+  <div class="page" id="page-scope1">
+    <div class="content">
+      <div class="page-header">
+        <div class="page-title">Scope 1 — Direct Emissions</div>
+        <div class="page-desc">Direct GHG emissions from sources owned or controlled by your organisation.</div>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab(this,'s1-stationary')">Stationary Combustion</button>
+        <button class="tab-btn" onclick="switchTab(this,'s1-mobile')">Mobile Combustion</button>
+        <button class="tab-btn" onclick="switchTab(this,'s1-refrigerant')">Refrigerants & Fugitive</button>
+        <button class="tab-btn" onclick="switchTab(this,'s1-process')">Process Emissions</button>
+      </div>
+
+      <div id="s1-stationary">
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Fuel combustion — generators & plant</div></div>
+            <div class="card-body">
+              <div class="input-section">
+                <div class="input-section-title"><span class="scope-pill sp-1">S1</span> Diesel & fuel oil</div>
+                <div class="input-grid">
+                  <div class="input-group"><label>Diesel — generators (litres)</label><div class="input-group-row"><input class="input-field" type="number" value="12500" oninput="updateResult(this,0.00268,'r-dg')"/><span class="input-unit">L</span></div><span class="input-result-tag" id="r-dg">33.5 tCO₂e</span></div>
+                  <div class="input-group"><label>Diesel — site equipment (litres)</label><div class="input-group-row"><input class="input-field" type="number" value="8000" oninput="updateResult(this,0.00268,'r-ds')"/><span class="input-unit">L</span></div><span class="input-result-tag" id="r-ds">21.4 tCO₂e</span></div>
+                  <div class="input-group"><label>Natural gas (m³)</label><div class="input-group-row"><input class="input-field" type="number" value="0"/><span class="input-unit">m³</span></div><span class="input-result-tag">0 tCO₂e</span></div>
+                  <div class="input-group"><label>LPG (litres)</label><div class="input-group-row"><input class="input-field" type="number" value="500"/><span class="input-unit">L</span></div><span class="input-result-tag">1.2 tCO₂e</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Scope 1 subtotal</div></div>
+            <div class="card-body">
+              <div style="font-size:32px;font-weight:700;color:var(--text);letter-spacing:-1px;margin-bottom:4px">486 <span style="font-size:14px;font-weight:400;color:var(--text3)">tCO₂e</span></div>
+              <div style="font-size:11px;color:var(--text3);margin-bottom:16px">Emission factors: NEA Singapore 2024 / IPCC AR6 GWP100</div>
+              <div class="bar-chart-row"><div class="bcr-label">Diesel combustion</div><div class="bcr-track"><div class="bcr-fill" style="width:88%;background:var(--red)"></div></div><div class="bcr-val">289 tCO₂e</div></div>
+              <div class="bar-chart-row"><div class="bcr-label">Machinery fuel</div><div class="bcr-track"><div class="bcr-fill" style="width:60%;background:var(--amber)"></div></div><div class="bcr-val">143 tCO₂e</div></div>
+              <div class="bar-chart-row"><div class="bcr-label">Refrigerants</div><div class="bcr-track"><div class="bcr-fill" style="width:22%;background:var(--blue)"></div></div><div class="bcr-val">54 tCO₂e</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="s1-mobile" style="display:none">
+        <div class="card"><div class="card-header"><div class="card-title">Company vehicles & construction machinery</div></div><div class="card-body">
+          <div class="input-grid">
+            <div class="input-group"><label>Company vehicles — diesel (litres)</label><div class="input-group-row"><input class="input-field" type="number" value="8200"/><span class="input-unit">L</span></div><span class="input-result-tag">22.0 tCO₂e</span></div>
+            <div class="input-group"><label>Company vehicles — petrol (litres)</label><div class="input-group-row"><input class="input-field" type="number" value="3400"/><span class="input-unit">L</span></div><span class="input-result-tag">7.8 tCO₂e</span></div>
+            <div class="input-group"><label>Excavators & bulldozers (litres)</label><div class="input-group-row"><input class="input-field" type="number" value="25000"/><span class="input-unit">L</span></div><span class="input-result-tag">67.0 tCO₂e</span></div>
+            <div class="input-group"><label>Tower cranes (kWh)</label><div class="input-group-row"><input class="input-field" type="number" value="48000"/><span class="input-unit">kWh</span></div><span class="input-result-tag">20.0 tCO₂e</span></div>
+          </div>
+        </div></div>
+      </div>
+      <div id="s1-refrigerant" style="display:none">
+        <div class="card"><div class="card-header"><div class="card-title">Refrigerant leakage & fugitive emissions</div></div><div class="card-body">
+          <div class="alert alert-info"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>Use annual refrigerant top-up quantity as a proxy for leakage where direct measurement is unavailable (IPCC Tier 1).</div>
+          <div class="input-grid">
+            <div class="input-group"><label>R-410A leaked (kg)</label><div class="input-group-row"><input class="input-field" type="number" value="12"/><span class="input-unit">kg</span></div><span class="input-result-tag">25.3 tCO₂e</span></div>
+            <div class="input-group"><label>R-22 leaked (kg)</label><div class="input-group-row"><input class="input-field" type="number" value="0"/><span class="input-unit">kg</span></div><span class="input-result-tag">0 tCO₂e</span></div>
+            <div class="input-group"><label>R-134a leaked (kg)</label><div class="input-group-row"><input class="input-field" type="number" value="3"/><span class="input-unit">kg</span></div><span class="input-result-tag">4.1 tCO₂e</span></div>
+          </div>
+        </div></div>
+      </div>
+      <div id="s1-process" style="display:none">
+        <div class="card"><div class="card-header"><div class="card-title">Process emissions (concrete batching, welding)</div></div><div class="card-body">
+          <div class="input-grid">
+            <div class="input-group"><label>On-site concrete batching (m³)</label><div class="input-group-row"><input class="input-field" type="number" value="0"/><span class="input-unit">m³</span></div><span class="input-result-tag">0 tCO₂e</span></div>
+            <div class="input-group"><label>Welding gas consumption (kg)</label><div class="input-group-row"><input class="input-field" type="number" value="45"/><span class="input-unit">kg</span></div><span class="input-result-tag">1.4 tCO₂e</span></div>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================= SCOPE 2 ========================= -->
+  <div class="page" id="page-scope2">
+    <div class="content">
+      <div class="page-header"><div class="page-title">Scope 2 — Purchased Electricity</div><div class="page-desc">Indirect emissions from purchased electricity, steam, heating, and cooling.</div></div>
+      <div class="alert alert-warning"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg><div>3 months of electricity data are missing (Oct–Dec 2024). Upload SP bills via AI Bill Upload to complete your record.</div></div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Electricity consumption</div></div>
+          <div class="card-body">
+            <div class="input-section">
+              <div class="input-section-title">Location-based method</div>
+              <div class="input-grid">
+                <div class="input-group"><label>Site electricity (kWh)</label><div class="input-group-row"><input class="input-field" type="number" value="520000"/><span class="input-unit">kWh</span></div><span class="input-result-tag">216.8 tCO₂e</span></div>
+                <div class="input-group"><label>Office electricity (kWh)</label><div class="input-group-row"><input class="input-field" type="number" value="95000"/><span class="input-unit">kWh</span></div><span class="input-result-tag">39.6 tCO₂e</span></div>
+              </div>
+            </div>
+            <div class="input-section">
+              <div class="input-section-title">Grid emission factor</div>
+              <select class="input-field">
+                <option>Singapore EMA 2024 — 0.4168 kgCO₂e/kWh</option>
+                <option>Singapore EMA 2023 — 0.4180 kgCO₂e/kWh</option>
+                <option>Singapore EMA 2022 — 0.4188 kgCO₂e/kWh</option>
+                <option>Custom factor</option>
+              </select>
+            </div>
+            <div class="input-section">
+              <div class="input-section-title">Market-based method (optional)</div>
+              <div class="input-grid">
+                <div class="input-group"><label>RECs / GreenE certificates (MWh)</label><div class="input-group-row"><input class="input-field" type="number" value="0"/><span class="input-unit">MWh</span></div><span class="input-result-tag">0 tCO₂e offset</span></div>
+                <div class="input-group"><label>On-site solar generation (kWh)</label><div class="input-group-row"><input class="input-field" type="number" value="0"/><span class="input-unit">kWh</span></div><span class="input-result-tag">0 tCO₂e offset</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Monthly data log</div></div>
+          <div class="card-body">
+            <table class="data-table">
+              <thead><tr><th>Month</th><th>kWh</th><th>tCO₂e</th><th>Source</th></tr></thead>
+              <tbody>
+                <tr><td>Jan 2024</td><td>53,200</td><td>22.2</td><td><span class="status-pill sp-submitted">SP Bill</span></td></tr>
+                <tr><td>Feb 2024</td><td>48,700</td><td>20.3</td><td><span class="status-pill sp-submitted">SP Bill</span></td></tr>
+                <tr><td>Mar 2024</td><td>51,000</td><td>21.3</td><td><span class="status-pill sp-submitted">SP Bill</span></td></tr>
+                <tr><td>Apr 2024</td><td>55,400</td><td>23.1</td><td><span class="status-pill sp-submitted">SP Bill</span></td></tr>
+                <tr><td>May 2024</td><td>60,200</td><td>25.1</td><td><span class="status-pill sp-submitted">SP Bill</span></td></tr>
+                <tr><td>Jun 2024</td><td>62,800</td><td>26.2</td><td><span class="status-pill sp-submitted">SP Bill</span></td></tr>
+                <tr><td>Jul 2024</td><td>65,000</td><td>27.1</td><td><span class="status-pill sp-submitted">Manual</span></td></tr>
+                <tr><td>Aug 2024</td><td>63,400</td><td>26.4</td><td><span class="status-pill sp-submitted">Manual</span></td></tr>
+                <tr><td>Sep 2024</td><td>60,300</td><td>25.1</td><td><span class="status-pill sp-submitted">Manual</span></td></tr>
+                <tr><td>Oct 2024</td><td>—</td><td>—</td><td><span class="status-pill sp-pending">Missing</span></td></tr>
+                <tr><td>Nov 2024</td><td>—</td><td>—</td><td><span class="status-pill sp-pending">Missing</span></td></tr>
+                <tr><td>Dec 2024</td><td>—</td><td>—</td><td><span class="status-pill sp-pending">Missing</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= SCOPE 3 ========================= -->
+  <div class="page" id="page-scope3">
+    <div class="content">
+      <div class="page-header"><div class="page-title">Scope 3 — Value Chain Emissions</div><div class="page-desc">All other indirect GHG emissions across your upstream and downstream value chain (GHG Protocol Cat. 1–15).</div></div>
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="switchTab(this,'s3-materials')">Purchased Materials</button>
+        <button class="tab-btn" onclick="switchTab(this,'s3-transport')">Transport & Waste</button>
+        <button class="tab-btn" onclick="switchTab(this,'s3-people')">People & Travel</button>
+        <button class="tab-btn" onclick="switchTab(this,'s3-supply')">Supply Chain</button>
+      </div>
+      <div id="s3-materials">
+        <div class="alert alert-info"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><div>Construction material EFs are sourced from the <strong>Singapore Building Carbon Calculator (SBCC)</strong> / BCA Green Mark EPD database, localised for SG context.</div></div>
+        <div class="grid-2">
+          <div class="card"><div class="card-header"><div class="card-title">Structural materials</div></div><div class="card-body">
+            <div class="input-grid">
+              <div class="input-group"><label>Ready-mix concrete (m³)</label><div class="input-group-row"><input class="input-field" type="number" value="1200"/><span class="input-unit">m³</span></div><span class="input-result-tag">312.0 tCO₂e</span></div>
+              <div class="input-group"><label>Steel rebar (tonnes)</label><div class="input-group-row"><input class="input-field" type="number" value="180"/><span class="input-unit">t</span></div><span class="input-result-tag">252.0 tCO₂e</span></div>
+              <div class="input-group"><label>Structural steel (tonnes)</label><div class="input-group-row"><input class="input-field" type="number" value="45"/><span class="input-unit">t</span></div><span class="input-result-tag">96.8 tCO₂e</span></div>
+              <div class="input-group"><label>Timber / formwork (m³)</label><div class="input-group-row"><input class="input-field" type="number" value="45"/><span class="input-unit">m³</span></div><span class="input-result-tag">18.0 tCO₂e</span></div>
+              <div class="input-group"><label>Aluminium (tonnes)</label><div class="input-group-row"><input class="input-field" type="number" value="8"/><span class="input-unit">t</span></div><span class="input-result-tag">79.2 tCO₂e</span></div>
+              <div class="input-group"><label>Glass (tonnes)</label><div class="input-group-row"><input class="input-field" type="number" value="12"/><span class="input-unit">t</span></div><span class="input-result-tag">10.1 tCO₂e</span></div>
+            </div>
+          </div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Other purchased goods ($SGD spend)</div></div><div class="card-body">
+            <div class="input-section-title" style="margin-bottom:8px">Spend-based method (EEIO)</div>
+            <div class="input-grid">
+              <div class="input-group"><label>Subcontractor services ($SGD)</label><div class="input-group-row"><input class="input-field" type="number" value="250000"/><span class="input-unit">$</span></div><span class="input-result-tag">102.0 tCO₂e</span></div>
+              <div class="input-group"><label>Plant & equipment hire ($SGD)</label><div class="input-group-row"><input class="input-field" type="number" value="85000"/><span class="input-unit">$</span></div><span class="input-result-tag">34.0 tCO₂e</span></div>
+              <div class="input-group"><label>PPE & safety equipment ($SGD)</label><div class="input-group-row"><input class="input-field" type="number" value="18000"/><span class="input-unit">$</span></div><span class="input-result-tag">7.2 tCO₂e</span></div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+      <div id="s3-transport" style="display:none">
+        <div class="grid-2">
+          <div class="card"><div class="card-header"><div class="card-title">Transport & logistics</div></div><div class="card-body">
+            <div class="input-grid">
+              <div class="input-group"><label>Material deliveries (tonne-km)</label><div class="input-group-row"><input class="input-field" type="number" value="85000"/><span class="input-unit">t·km</span></div><span class="input-result-tag">68.0 tCO₂e</span></div>
+              <div class="input-group"><label>Waste disposal transport (tonne-km)</label><div class="input-group-row"><input class="input-field" type="number" value="12000"/><span class="input-unit">t·km</span></div><span class="input-result-tag">9.6 tCO₂e</span></div>
+            </div>
+          </div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Waste generated on site</div></div><div class="card-body">
+            <div class="input-grid">
+              <div class="input-group"><label>Construction waste to landfill (t)</label><div class="input-group-row"><input class="input-field" type="number" value="42"/><span class="input-unit">t</span></div><span class="input-result-tag">28.6 tCO₂e</span></div>
+              <div class="input-group"><label>General office waste (t)</label><div class="input-group-row"><input class="input-field" type="number" value="8"/><span class="input-unit">t</span></div><span class="input-result-tag">4.2 tCO₂e</span></div>
+              <div class="input-group"><label>Inert waste — recycled (t)</label><div class="input-group-row"><input class="input-field" type="number" value="30"/><span class="input-unit">t</span></div><span class="input-result-tag">0.6 tCO₂e</span></div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+      <div id="s3-people" style="display:none">
+        <div class="grid-2">
+          <div class="card"><div class="card-header"><div class="card-title">Employee & worker commute</div></div><div class="card-body">
+            <div class="input-grid">
+              <div class="input-group"><label>Average daily headcount (FTE)</label><div class="input-group-row"><input class="input-field" type="number" value="85"/><span class="input-unit">pax</span></div></div>
+              <div class="input-group"><label>Working days per year</label><div class="input-group-row"><input class="input-field" type="number" value="250"/><span class="input-unit">days</span></div></div>
+              <div class="input-group"><label>Average one-way commute (km)</label><div class="input-group-row"><input class="input-field" type="number" value="22"/><span class="input-unit">km</span></div><span class="input-result-tag">132.0 tCO₂e</span></div>
+              <div class="input-group"><label>Primary transport mode</label><select class="input-field"><option>Public transport (MRT/bus)</option><option>Private car</option><option>Mixed</option><option>Company bus</option></select></div>
+            </div>
+          </div></div>
+          <div class="card"><div class="card-header"><div class="card-title">Business travel</div></div><div class="card-body">
+            <div class="input-grid">
+              <div class="input-group"><label>Air travel — short-haul (km)</label><div class="input-group-row"><input class="input-field" type="number" value="12000"/><span class="input-unit">km</span></div><span class="input-result-tag">2.2 tCO₂e</span></div>
+              <div class="input-group"><label>Air travel — long-haul (km)</label><div class="input-group-row"><input class="input-field" type="number" value="33000"/><span class="input-unit">km</span></div><span class="input-result-tag">6.2 tCO₂e</span></div>
+              <div class="input-group"><label>Hotel nights</label><div class="input-group-row"><input class="input-field" type="number" value="30"/><span class="input-unit">nights</span></div><span class="input-result-tag">1.2 tCO₂e</span></div>
+              <div class="input-group"><label>Taxi / ride-hailing (km)</label><div class="input-group-row"><input class="input-field" type="number" value="4500"/><span class="input-unit">km</span></div><span class="input-result-tag">0.8 tCO₂e</span></div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+      <div id="s3-supply" style="display:none">
+        <div class="alert alert-info"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg><div>Request your sub-contractors to submit their Scope 1 & 2 data via the Sub-contractor Hub. Their emissions will auto-populate here as Category 1 upstream data.</div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Sub-contractor emissions (Category 1 upstream)</div></div><div class="card-body">
+          <table class="data-table">
+            <thead><tr><th>Sub-contractor</th><th>Scope 1</th><th>Scope 2</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>SG Electrical Works Pte Ltd</td><td>12.4 tCO₂e</td><td>8.2 tCO₂e</td><td>20.6 tCO₂e</td><td><span class="status-pill sp-submitted">Submitted</span></td></tr>
+              <tr><td>Rapid Plumbing Sdn Bhd</td><td>8.1 tCO₂e</td><td>4.4 tCO₂e</td><td>12.5 tCO₂e</td><td><span class="status-pill sp-submitted">Submitted</span></td></tr>
+              <tr><td>StreetWorks Civil Pte Ltd</td><td>—</td><td>—</td><td>—</td><td><span class="status-pill sp-draft">Pending</span></td></tr>
+              <tr><td>Mega Scaffolding Pte Ltd</td><td>—</td><td>—</td><td>—</td><td><span class="status-pill sp-pending">Invited</span></td></tr>
+            </tbody>
+          </table>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= EMBODIED CARBON ========================= -->
+  <div class="page" id="page-embodied">
+    <div class="content">
+      <div class="page-header"><div class="page-title">Embodied Carbon — BCA Green Mark / SGBC</div><div class="page-desc">Life cycle stages A1–A5: Upfront carbon from materials and construction (aligned to Singapore Building Carbon Calculator).</div></div>
+      <div class="alert alert-success"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14l-4-4 1.41-1.41L10 13.17l6.59-6.59L18 8l-8 8z"/></svg><div>EF database includes Singapore Building Carbon Calculator EPD data from BCA, SGBC, and JTC. Aligned to Green Mark 2021 Whole Life Carbon requirements.</div></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">Life cycle stages</div></div><div class="card-body">
+          <div class="input-grid">
+            <div class="input-group"><label>A1-A3: Material production (tCO₂e)</label><input class="input-field" type="number" value="842" placeholder="Auto from Scope 3"/></div>
+            <div class="input-group"><label>A4: Transport to site (tCO₂e)</label><input class="input-field" type="number" value="68" placeholder="Auto from Scope 3"/></div>
+            <div class="input-group"><label>A5: Construction process (tCO₂e)</label><input class="input-field" type="number" value="132" placeholder="Auto from Scope 1/2"/></div>
+            <div class="input-group"><label>B6: Operational energy (tCO₂e/yr)</label><input class="input-field" type="number" value="312" placeholder="Auto from Scope 2"/></div>
+          </div>
+          <div style="margin-top:14px;padding:12px;background:var(--surface2);border-radius:var(--radius)">
+            <div class="section-label">Total Whole Life Carbon</div>
+            <div style="font-size:28px;font-weight:700;color:var(--text)">1,354 <span style="font-size:13px;font-weight:400;color:var(--text3)">tCO₂e</span></div>
+            <div style="font-size:11px;color:var(--text3);margin-top:4px">GFA: 8,500 m² &nbsp;·&nbsp; Intensity: 159.3 kgCO₂e/m²</div>
+          </div>
+        </div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Green Mark benchmarks</div></div><div class="card-body">
+          <div class="bar-chart-row" style="margin-bottom:14px"><div class="bcr-label">Your project</div><div class="bcr-track"><div class="bcr-fill" style="width:63%;background:var(--green)"></div></div><div class="bcr-val">159 kgCO₂e/m²</div></div>
+          <div class="bar-chart-row" style="margin-bottom:14px"><div class="bcr-label">GM Platinum target</div><div class="bcr-track"><div class="bcr-fill" style="width:50%;background:var(--blue)"></div></div><div class="bcr-val">125 kgCO₂e/m²</div></div>
+          <div class="bar-chart-row" style="margin-bottom:14px"><div class="bcr-label">GM Gold target</div><div class="bcr-track"><div class="bcr-fill" style="width:72%;background:var(--amber)"></div></div><div class="bcr-val">180 kgCO₂e/m²</div></div>
+          <div class="bar-chart-row"><div class="bcr-label">SG Industry avg</div><div class="bcr-track"><div class="bcr-fill" style="width:85%;background:var(--text3)"></div></div><div class="bcr-val">213 kgCO₂e/m²</div></div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= AI BILL UPLOAD ========================= -->
+  <div class="page" id="page-upload">
+    <div class="content">
+      <div class="page-header"><div class="page-title">AI Bill Upload</div><div class="page-desc">Upload invoices, utility bills, and receipts. AI extracts quantities and maps to emission categories automatically.</div></div>
+      <div class="grid-2">
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><div><div class="card-title">Upload document</div><div class="card-sub">PDF, JPG, PNG — SP bills, diesel receipts, material invoices, service records</div></div></div>
+            <div class="card-body">
+              <div class="upload-zone" id="uploadZone">
+                <input type="file" id="fileInput" accept=".pdf,.jpg,.jpeg,.png"/>
+                <div class="upload-icon-wrap"><svg viewBox="0 0 24 24"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg></div>
+                <div class="upload-title" id="uploadTitle">Drop file here or click to browse</div>
+                <div class="upload-sub">Supports SP electricity bills, diesel receipts, concrete/steel invoices, refrigerant service records, waste disposal certificates</div>
+                <div class="ai-chip"><svg viewBox="0 0 12 12" width="10" height="10" fill="currentColor"><circle cx="6" cy="6" r="5"/></svg> AI-powered OCR + Emission Factor Matching</div>
+              </div>
+
+              <!-- Loading state -->
+              <div id="uploadLoading" style="display:none;text-align:center;padding:20px">
+                <div style="font-size:13px;color:var(--text2);margin-bottom:8px">🤖 AI is reading your document...</div>
+                <div style="font-size:11px;color:var(--text3)">Extracting quantities and matching emission factors</div>
+                <div style="margin-top:12px;height:4px;background:var(--surface2);border-radius:4px;overflow:hidden">
+                  <div id="progressBar" style="height:100%;width:0%;background:var(--green);border-radius:4px;transition:width 0.3s"></div>
+                </div>
+              </div>
+
+              <!-- Error state -->
+              <div id="uploadError" style="display:none;margin-top:12px;padding:12px;background:var(--red-light);border:1px solid #F7C1C1;border-radius:var(--radius);font-size:12px;color:var(--red)"></div>
+
+              <!-- Result -->
+              <div id="extractedResult" style="display:none">
+                <div class="extracted-box">
+                  <div class="ext-header">
+                    <span class="ext-filename" id="resFilename"></span>
+                    <span class="ext-conf" id="resConfidence"></span>
+                  </div>
+                  <div class="ext-row"><span class="ext-key">Document type</span><span class="ext-val" id="resDocType"></span></div>
+                  <div class="ext-row"><span class="ext-key">Supplier</span><span class="ext-val" id="resSupplier"></span></div>
+                  <div class="ext-row"><span class="ext-key">Billing period</span><span class="ext-val" id="resPeriod"></span></div>
+                  <div class="ext-row"><span class="ext-key">Extracted items</span><span class="ext-val" id="resItems"></span></div>
+                  <div class="ext-row"><span class="ext-key">Notes</span><span class="ext-val" id="resNotes"></span></div>
+                  <div style="display:flex;gap:8px;margin-top:12px">
+                    <button class="btn btn-primary" style="flex:1" onclick="acceptExtraction()">✓ Accept & Save</button>
+                    <button class="btn btn-outline" onclick="resetUpload()">Upload another</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Bulk CSV upload</div></div>
+            <div class="card-body" style="font-size:12px;color:var(--text2)">
+              <p style="margin-bottom:10px">For large datasets, download our CSV template and upload multiple entries at once.</p>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-outline">Download CSV template</button>
+                <button class="btn btn-outline">Upload CSV</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card" style="margin-bottom:16px">
+            <div class="card-header"><div><div class="card-title">Pending review</div><div class="card-sub">3 items awaiting action</div></div></div>
+            <div class="card-body">
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-size:12px;font-weight:600;color:var(--text)">Diesel_Receipt_Sep2024.pdf</div><div style="font-size:11px;color:var(--text3)">Extracted: 8,400L diesel · <span class="scope-pill sp-1">S1</span></div></div>
+                <div style="display:flex;gap:6px"><button class="btn btn-primary" style="padding:4px 10px;font-size:11px">Accept</button><button class="btn btn-outline" style="padding:4px 10px;font-size:11px">Review</button></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+                <div><div style="font-size:12px;font-weight:600;color:var(--text)">Steel_Invoice_Aug2024.pdf</div><div style="font-size:11px;color:var(--text3)">Extracted: 45 tonnes steel · <span class="scope-pill sp-3">S3</span></div></div>
+                <div style="display:flex;gap:6px"><button class="btn btn-primary" style="padding:4px 10px;font-size:11px">Accept</button><button class="btn btn-outline" style="padding:4px 10px;font-size:11px">Review</button></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0">
+                <div><div style="font-size:12px;font-weight:600;color:var(--text)">Aircon_Service_Jul2024.pdf</div><div style="font-size:11px;color:var(--text3)">Low confidence (62%) · Manual review needed</div></div>
+                <div style="display:flex;gap:6px"><button class="btn btn-outline" style="padding:4px 10px;font-size:11px;color:var(--red);border-color:var(--red)">Review</button></div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Supported document types</div></div>
+            <div class="card-body">
+              <table class="data-table">
+                <thead><tr><th>Document type</th><th>Scope</th><th>AI accuracy</th></tr></thead>
+                <tbody>
+                  <tr><td>SP Group electricity bills</td><td><span class="scope-pill sp-2">S2</span></td><td style="color:var(--green);font-weight:600">97%</td></tr>
+                  <tr><td>Diesel / petrol receipts</td><td><span class="scope-pill sp-1">S1</span></td><td style="color:var(--green);font-weight:600">94%</td></tr>
+                  <tr><td>Concrete purchase orders</td><td><span class="scope-pill sp-3">S3</span></td><td style="color:var(--green);font-weight:600">91%</td></tr>
+                  <tr><td>Steel / structural invoices</td><td><span class="scope-pill sp-3">S3</span></td><td style="color:var(--amber);font-weight:600">87%</td></tr>
+                  <tr><td>Aircon service records</td><td><span class="scope-pill sp-1">S1</span></td><td style="color:var(--amber);font-weight:600">72%</td></tr>
+                  <tr><td>Waste disposal certs</td><td><span class="scope-pill sp-3">S3</span></td><td style="color:var(--amber);font-weight:600">83%</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= TARGETS ========================= -->
+  <div class="page" id="page-targets">
+    <div class="content">
+      <div class="page-header"><div class="page-title">Targets & Reduction Roadmap</div><div class="page-desc">Set science-based targets and track decarbonisation initiatives aligned to Singapore Green Plan 2030.</div></div>
+      <div class="grid-2" style="margin-bottom:16px">
+        <div class="card"><div class="card-header"><div class="card-title">Net-zero trajectory</div></div><div class="card-body">
+          <canvas id="targetChart" height="160"></canvas>
+        </div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Reduction targets</div></div><div class="card-body">
+          <div class="target-card" style="margin-bottom:10px">
+            <div class="target-header"><div class="target-label">2025 target (-10% vs 2023 baseline)</div><span class="status-pill sp-draft">On track</span></div>
+            <div class="target-progress-track"><div class="target-progress-fill" style="width:42%"></div></div>
+            <div class="target-nums"><span>Baseline: 1,769 tCO₂e</span><span>Target: 1,592 tCO₂e</span></div>
+          </div>
+          <div class="target-card" style="margin-bottom:10px">
+            <div class="target-header"><div class="target-label">2030 target (-30% vs 2023 baseline)</div><span class="status-pill sp-pending">Planned</span></div>
+            <div class="target-progress-track"><div class="target-progress-fill" style="width:12%"></div></div>
+            <div class="target-nums"><span>Target: 1,238 tCO₂e</span><span>6 years remaining</span></div>
+          </div>
+          <div class="target-card">
+            <div class="target-header"><div class="target-label">2050 net-zero commitment</div><span class="status-pill sp-pending">Committed</span></div>
+            <div class="target-progress-track"><div class="target-progress-fill" style="width:4%"></div></div>
+            <div class="target-nums"><span>SG Green Plan aligned</span><span>26 years remaining</span></div>
+          </div>
+        </div></div>
+      </div>
+      <div class="card"><div class="card-header"><div class="card-title">Recommended reduction initiatives</div><div class="card-sub">AI-generated based on your emission profile</div></div><div class="card-body">
+        <div class="initiative-card">
+          <div class="init-icon" style="background:var(--green-light)"><svg viewBox="0 0 24 24" fill="var(--green)" width="18" height="18"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg></div>
+          <div><div class="init-label">Switch site electricity to solar PV or Green Tariff</div><div class="init-desc">Install rooftop solar or purchase SP Group's renewable energy certificates</div><div class="init-impact" style="color:var(--green-dark)">Est. saving: −90 to −312 tCO₂e/yr · Payback: 4–7 yrs</div></div>
+        </div>
+        <div class="initiative-card">
+          <div class="init-icon" style="background:var(--amber-light)"><svg viewBox="0 0 24 24" fill="var(--amber)" width="18" height="18"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4z"/></svg></div>
+          <div><div class="init-label">Switch diesel plant to electric or hydrogen equipment</div><div class="init-desc">Replace older diesel machinery with electric equivalents as they reach end-of-life</div><div class="init-impact" style="color:var(--amber)">Est. saving: −120 to −200 tCO₂e/yr · High upfront cost</div></div>
+        </div>
+        <div class="initiative-card">
+          <div class="init-icon" style="background:var(--blue-light)"><svg viewBox="0 0 24 24" fill="var(--blue)" width="18" height="18"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L19 8l-9 9z"/></svg></div>
+          <div><div class="init-label">Specify low-carbon concrete (SGBC EPD-certified)</div><div class="init-desc">Switch to SGBC-certified low-carbon ready-mix concrete with slag/fly-ash replacement</div><div class="init-impact" style="color:var(--blue)">Est. saving: −62 to −125 tCO₂e/yr · Minimal cost premium</div></div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+
+  <!-- ========================= SUPPLIERS ========================= -->
+  <div class="page" id="page-suppliers">
+    <div class="content">
+      <div class="page-header"><div class="page-title">Sub-contractor Hub</div><div class="page-desc">Invite and manage sub-contractors to submit their Scope 1 & 2 data. Their emissions feed into your Scope 3 Category 1.</div></div>
+      <div class="grid-2">
+        <div class="card"><div class="card-header"><div class="card-title">Your sub-contractors</div></div><div class="card-body">
+          <div class="supplier-row">
+            <div class="supplier-avatar" style="background:#1A8A5E">SG</div>
+            <div><div class="supplier-name">SG Electrical Works Pte Ltd</div><div class="supplier-type">Electrical sub-contractor</div></div>
+            <div class="supplier-status"><span class="status-pill sp-submitted">Submitted</span><span style="font-size:12px;color:var(--text2)">20.6 tCO₂e</span></div>
+          </div>
+          <div class="supplier-row">
+            <div class="supplier-avatar" style="background:#B87A10">RP</div>
+            <div><div class="supplier-name">Rapid Plumbing Sdn Bhd</div><div class="supplier-type">M&E sub-contractor</div></div>
+            <div class="supplier-status"><span class="status-pill sp-submitted">Submitted</span><span style="font-size:12px;color:var(--text2)">12.5 tCO₂e</span></div>
+          </div>
+          <div class="supplier-row">
+            <div class="supplier-avatar" style="background:#6B4FA8">SW</div>
+            <div><div class="supplier-name">StreetWorks Civil Pte Ltd</div><div class="supplier-type">Civil sub-contractor</div></div>
+            <div class="supplier-status"><span class="status-pill sp-draft">Pending</span><button class="btn btn-outline" style="padding:4px 10px;font-size:11px">Remind</button></div>
+          </div>
+          <div class="supplier-row">
+            <div class="supplier-avatar" style="background:#C0392B">MS</div>
+            <div><div class="supplier-name">Mega Scaffolding Pte Ltd</div><div class="supplier-type">Scaffolding works</div></div>
+            <div class="supplier-status"><span class="status-pill sp-pending">Invited</span><button class="btn btn-outline" style="padding:4px 10px;font-size:11px">Resend</button></div>
+          </div>
+          <button class="btn btn-primary" style="margin-top:14px;width:100%">+ Invite Sub-contractor</button>
+        </div></div>
+        <div class="card"><div class="card-header"><div class="card-title">Supply chain emissions</div></div><div class="card-body">
+          <div style="font-size:28px;font-weight:700;color:var(--text);margin-bottom:4px">33.1 <span style="font-size:13px;font-weight:400;color:var(--text3)">tCO₂e collected</span></div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:16px">2 of 4 sub-contractors submitted · 2 pending</div>
+          <div class="bar-chart-row"><div class="bcr-label">SG Electrical</div><div class="bcr-track"><div class="bcr-fill" style="width:62%;background:var(--green)"></div></div><div class="bcr-val">20.6 tCO₂e</div></div>
+          <div class="bar-chart-row"><div class="bcr-label">Rapid Plumbing</div><div class="bcr-track"><div class="bcr-fill" style="width:38%;background:var(--blue)"></div></div><div class="bcr-val">12.5 tCO₂e</div></div>
+          <div class="bar-chart-row"><div class="bcr-label">StreetWorks Civil</div><div class="bcr-track"><div class="bcr-fill" style="width:0;background:var(--text3)"></div></div><div class="bcr-val" style="color:var(--text3)">Pending</div></div>
+          <div class="bar-chart-row"><div class="bcr-label">Mega Scaffolding</div><div class="bcr-track"><div class="bcr-fill" style="width:0;background:var(--text3)"></div></div><div class="bcr-val" style="color:var(--text3)">Pending</div></div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= REPORTS ========================= -->
+  <div class="page" id="page-reports">
+    <div class="content">
+      <div class="page-header"><div class="page-title">Reports & Export</div><div class="page-desc">Generate compliant GHG reports aligned to GHG Protocol, ISO 14064-1, ISSB, GRI, and BCA Green Mark.</div></div>
+      <div class="grid-2">
+        <div>
+          <div class="card" style="margin-bottom:16px"><div class="card-header"><div class="card-title">Report settings</div></div><div class="card-body">
+            <div class="input-group" style="margin-bottom:12px"><label>Report standard</label>
+              <select class="input-field">
+                <option>GHG Protocol Corporate Standard</option>
+                <option>ISO 14064-1:2018</option>
+                <option>ISSB IFRS S2 (Climate)</option>
+                <option>GRI 305 — Emissions</option>
+                <option>BCA Green Mark 2021</option>
+                <option>SCAL ESG Template</option>
+              </select>
+            </div>
+            <div class="input-group" style="margin-bottom:12px"><label>Reporting period</label>
+              <select class="input-field">
+                <option>FY 2024 (Jan 1 – Dec 31, 2024)</option>
+                <option>FY 2023 (Jan 1 – Dec 31, 2023)</option>
+                <option>Custom range</option>
+              </select>
+            </div>
+            <div class="input-group" style="margin-bottom:12px"><label>Consolidation approach</label>
+              <select class="input-field">
+                <option>Operational control</option>
+                <option>Financial control</option>
+                <option>Equity share</option>
+              </select>
+            </div>
+            <div class="input-group"><label>Include third-party verification statement</label>
+              <select class="input-field"><option>No (self-reported)</option><option>Yes — Limited assurance</option><option>Yes — Reasonable assurance</option></select>
+            </div>
+          </div></div>
+        </div>
+        <div>
+          <div class="card"><div class="card-header"><div class="card-title">Export formats</div></div><div class="card-body">
+            <div class="report-option">
+              <div class="report-icon" style="background:var(--red-light)"><svg viewBox="0 0 24 24" fill="var(--red)" width="20" height="20"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+              <div><div class="report-label">GHG Report — PDF</div><div class="report-desc">Full formatted report with executive summary, charts, data tables</div></div>
+            </div>
+            <div class="report-option">
+              <div class="report-icon" style="background:#E6F4EE"><svg viewBox="0 0 24 24" fill="var(--green)" width="20" height="20"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg></div>
+              <div><div class="report-label">Excel workbook — Data</div><div class="report-desc">All raw activity data, EFs, and calculations in editable format</div></div>
+            </div>
+            <div class="report-option">
+              <div class="report-icon" style="background:var(--blue-light)"><svg viewBox="0 0 24 24" fill="var(--blue)" width="20" height="20"><path d="M9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4zm2.5 2.1h-15V5h15v14.1zm0-16.1h-15C3.9 3 3 3.9 3 5v14c0 1.1.9 2 2 2h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"/></svg></div>
+              <div><div class="report-label">ISSB / CDP disclosure — CSV</div><div class="report-desc">Structured data for CDP/ISSB submission templates</div></div>
+            </div>
+            <button class="btn btn-primary" style="width:100%;margin-top:8px;padding:11px">Generate Report</button>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================= MEMBERS ADMIN ========================= -->
+  <div class="page" id="page-members">
+    <div class="content">
+      <div class="page-header"><div class="page-title">SCAL Members Overview</div><div class="page-desc">Secretariat dashboard — aggregate emissions data across all registered SCAL members.</div></div>
+      <div class="metrics-row">
+        <div class="metric-card"><div class="metric-top"><div><div class="metric-val">142<span class="metric-unit">members</span></div><div class="metric-label">Registered on platform</div></div></div><div class="metric-delta delta-down">▲ +18 vs FY2023</div></div>
+        <div class="metric-card"><div class="metric-top"><div><div class="metric-val">98<span class="metric-unit">submitted</span></div><div class="metric-label">FY2024 submissions</div></div></div><div class="metric-delta delta-down">69% completion rate</div></div>
+        <div class="metric-card"><div class="metric-top"><div><div class="metric-val">218K<span class="metric-unit">tCO₂e</span></div><div class="metric-label">Total SCAL member emissions</div></div></div><div class="metric-delta delta-down">▼ −3.1% vs FY2023</div></div>
+        <div class="metric-card"><div class="metric-top"><div><div class="metric-val">1,536<span class="metric-unit">tCO₂e</span></div><div class="metric-label">Average per member</div></div></div><div class="metric-delta delta-neutral">— Industry avg</div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Member submissions — FY 2024</div><div><button class="btn btn-outline" style="font-size:11px">Export CSV</button></div></div>
+        <div class="card-body">
+          <table class="data-table">
+            <thead><tr><th>Company</th><th>Type</th><th>Scope 1</th><th>Scope 2</th><th>Scope 3</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td>ABC Construction Pte Ltd</td><td>Main</td><td>486</td><td>312</td><td>1,044</td><td><strong>1,842</strong></td><td><span class="status-pill sp-draft">In Progress</span></td></tr>
+              <tr><td>Dragages Singapore Pte Ltd</td><td>Main</td><td>1,240</td><td>680</td><td>3,120</td><td><strong>5,040</strong></td><td><span class="status-pill sp-verified">Verified</span></td></tr>
+              <tr><td>Woh Hup Pte Ltd</td><td>Main</td><td>892</td><td>445</td><td>2,340</td><td><strong>3,677</strong></td><td><span class="status-pill sp-submitted">Submitted</span></td></tr>
+              <tr><td>SG Electrical Works Pte Ltd</td><td>Sub</td><td>32</td><td>18</td><td>52</td><td><strong>102</strong></td><td><span class="status-pill sp-submitted">Submitted</span></td></tr>
+              <tr><td>Rapid Plumbing Sdn Bhd</td><td>Sub</td><td>24</td><td>12</td><td>38</td><td><strong>74</strong></td><td><span class="status-pill sp-submitted">Submitted</span></td></tr>
+              <tr><td>StreetWorks Civil Pte Ltd</td><td>Sub</td><td>—</td><td>—</td><td>—</td><td>—</td><td><span class="status-pill sp-draft">Pending</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ===== NAVIGATION =====
+function navigate(page, el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  el.classList.add('active');
+  const titles={dashboard:'Dashboard',scope1:'Scope 1 — Direct Emissions',scope2:'Scope 2 — Purchased Electricity',scope3:'Scope 3 — Value Chain',embodied:'Embodied Carbon (BCA)',upload:'AI Bill Upload',targets:'Targets & Reduction Roadmap',suppliers:'Sub-contractor Hub',reports:'Reports & Export',members:'SCAL Members Overview'};
+  document.getElementById('topbar-title').textContent=titles[page]||page;
+}
+
+// ===== TABS =====
+function switchTab(btn, id){
+  const parent=btn.closest('.page');
+  parent.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const prefix=id.split('-')[0]+'-';
+  parent.querySelectorAll('[id^="'+prefix+'"]').forEach(el=>el.style.display='none');
+  document.getElementById(id).style.display='';
+}
+
+// ===== INPUT CALC =====
+function updateResult(input,factor,resultId){
+  const el=document.getElementById(resultId);
+  if(el) el.textContent=(parseFloat(input.value||0)*factor).toFixed(1)+' tCO₂e';
+}
+
+// ===== REAL FILE UPLOAD =====
+const API_BASE = window.location.origin; // auto-detect local or Railway URL
+let lastExtracted = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  const fileInput = document.getElementById('fileInput');
+  const uploadZone = document.getElementById('uploadZone');
+
+  // Click on zone triggers file picker
+  uploadZone.addEventListener('click', () => fileInput.click());
+
+  // Drag and drop
+  uploadZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadZone.style.borderColor = 'var(--green)';
+    uploadZone.style.background = 'var(--green-light)';
+  });
+  uploadZone.addEventListener('dragleave', () => {
+    uploadZone.style.borderColor = '';
+    uploadZone.style.background = '';
+  });
+  uploadZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  });
+
+  // File selected via picker
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) processFile(fileInput.files[0]);
+  });
+});
+
+async function processFile(file) {
+  // Show loading
+  document.getElementById('uploadZone').style.display = 'none';
+  document.getElementById('uploadLoading').style.display = 'block';
+  document.getElementById('extractedResult').style.display = 'none';
+  document.getElementById('uploadError').style.display = 'none';
+
+  // Animate progress bar
+  let progress = 0;
+  const bar = document.getElementById('progressBar');
+  const interval = setInterval(() => {
+    progress = Math.min(progress + 8, 85);
+    bar.style.width = progress + '%';
+  }, 300);
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${API_BASE}/api/documents/upload`, {
+      method: 'POST',
+      body: formData
+    });
+
+    clearInterval(interval);
+    bar.style.width = '100%';
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || 'Upload failed');
+    }
+
+    const data = await response.json();
+    lastExtracted = data;
+
+    // Small delay then show result
+    setTimeout(() => {
+      document.getElementById('uploadLoading').style.display = 'none';
+      showExtractionResult(file.name, data.extracted);
+    }, 500);
+
+  } catch (err) {
+    clearInterval(interval);
+    document.getElementById('uploadLoading').style.display = 'none';
+    document.getElementById('uploadZone').style.display = 'block';
+    const errBox = document.getElementById('uploadError');
+    errBox.style.display = 'block';
+    errBox.textContent = '⚠ ' + err.message;
+  }
+}
+
+function showExtractionResult(filename, ext) {
+  document.getElementById('resFilename').textContent = filename;
+  const conf = Math.round((ext.overallConfidence || 0) * 100);
+  document.getElementById('resConfidence').textContent = conf + '% confidence';
+  document.getElementById('resDocType').textContent = (ext.documentType || 'Unknown').replace(/_/g,' ');
+  document.getElementById('resSupplier').textContent = ext.supplier || '—';
+  const period = ext.billingPeriod;
+  document.getElementById('resPeriod').textContent = period && period.start ? `${period.start} to ${period.end}` : '—';
+
+  // Show line items
+  if (ext.lineItems && ext.lineItems.length > 0) {
+    const items = ext.lineItems.map(i => `${i.quantity} ${i.unit} (${i.emissionCategory})`).join(', ');
+    document.getElementById('resItems').textContent = items;
+  } else {
+    document.getElementById('resItems').textContent = 'No items detected';
+  }
+  document.getElementById('resNotes').textContent = ext.notes || '—';
+
+  document.getElementById('extractedResult').style.display = 'block';
+}
+
+function acceptExtraction() {
+  alert('✅ Saved! In the full version this will add the entry to your emissions data.');
+  resetUpload();
+}
+
+function resetUpload() {
+  lastExtracted = null;
+  document.getElementById('uploadZone').style.display = 'block';
+  document.getElementById('uploadZone').style.borderColor = '';
+  document.getElementById('uploadZone').style.background = '';
+  document.getElementById('extractedResult').style.display = 'none';
+  document.getElementById('uploadError').style.display = 'none';
+  document.getElementById('fileInput').value = '';
+}
+
+// ===== CHARTS =====
+window.addEventListener('load',()=>{
+  // Trend chart
+  const tCtx=document.getElementById('trendChart').getContext('2d');
+  new Chart(tCtx,{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],datasets:[{label:'Scope 1',data:[42,38,44,40,45,48,50,47,46,0,0,0],backgroundColor:'rgba(192,57,43,0.7)',stack:'s'},{label:'Scope 2',data:[22,20,21,23,25,26,27,26,25,0,0,0],backgroundColor:'rgba(184,122,16,0.7)',stack:'s'},{label:'Scope 3',data:[88,82,95,90,102,108,112,108,105,0,0,0],backgroundColor:'rgba(30,111,168,0.6)',stack:'s'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:10,padding:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:11}},title:{display:true,text:'tCO₂e',font:{size:10}}}}}});
+
+  // Donut chart
+  const dCtx=document.getElementById('donutChart').getContext('2d');
+  new Chart(dCtx,{type:'doughnut',data:{labels:['Scope 3','Scope 1','Scope 2'],datasets:[{data:[1044,486,312],backgroundColor:['#C0392B','#B87A10','#1E6FA8'],borderWidth:0,hoverOffset:4}]},options:{responsive:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' '+c.label+': '+c.parsed+' tCO₂e'}}}}}});
+
+  // Target trajectory chart
+  const tgCtx=document.getElementById('targetChart').getContext('2d');
+  new Chart(tgCtx,{type:'line',data:{labels:['2022','2023','2024','2025','2026','2027','2028','2029','2030','2035','2050'],datasets:[{label:'Actual / projected',data:[1820,1769,1842,1680,1590,1500,1420,1340,1240,900,null],borderColor:'#1A8A5E',backgroundColor:'rgba(26,138,94,0.08)',tension:.3,pointRadius:4,pointBackgroundColor:'#1A8A5E',fill:true},{label:'Net-zero target path',data:[1820,1769,1690,1592,1494,1396,1298,1200,1238,750,0],borderColor:'#B87A10',borderDash:[5,4],tension:.3,pointRadius:2,fill:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'top',labels:{font:{size:11},boxWidth:10,padding:10}}},scales:{x:{grid:{display:false},ticks:{font:{size:11}}},y:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.04)'},title:{display:true,text:'tCO₂e',font:{size:10}}}}}});
+});
+</script>
+</body>
+</html>
